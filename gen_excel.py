@@ -58,7 +58,7 @@ def excel_gen_all_list_in_record(wb,ws,cur_rec, bskey, row_idx):
 		else:
 			ws.write(row_idx, col_idx, cur_rec["name"]);
 
-		print type(cur_rec["date"])
+		#print type(cur_rec["date"])
 		col_idx=col_idx+1;ws.write_datetime(row_idx, col_idx, cur_rec["date"], date_format);
 		col_idx=col_idx+1;ws.write(row_idx, col_idx, cur_rec[bskey][bidx]["who"].decode("utf-8"));
 		col_idx=col_idx+1;ws.write(row_idx, col_idx, cur_rec[bskey][bidx]["buy"], red_format);
@@ -95,9 +95,9 @@ def excel_do_gen():
 
 
 	for col_idx in range(len(heads)):
-		print heads[col_idx]
-		print type(heads[col_idx])
-		print type(heads[col_idx].encode("utf-8"))
+		#print heads[col_idx]
+		#print type(heads[col_idx])
+		#print type(heads[col_idx].encode("utf-8"))
 		ws.write(0, col_idx, heads[col_idx], header_format);
 	
 	ws.set_column(1, 1, 12);#name
@@ -107,8 +107,8 @@ def excel_do_gen():
 	for key in g_rec.keys():
 		#print key
 		cur_rec=g_rec[key][0]
-		print cur_rec
-		print cur_rec[keys[1]]
+		#print cur_rec
+		#print cur_rec[keys[1]]
 
 		row_idx=excel_gen_all_list_in_record(wb, ws, cur_rec, "buy", row_idx)
 		row_idx=excel_gen_all_list_in_record(wb, ws, cur_rec, "sell", row_idx)

@@ -63,3 +63,10 @@ def xlsxwriter_write_chinese(ws,row_idx,col_idx,data, cell_format=None):
 		ws.write(row_idx, col_idx, data.decode("utf-8"),cell_format);
 	else:
 		ws.write(row_idx, col_idx, data,cell_format);
+		
+def date_is_workday(dtime):
+	weekday=dtime.strftime("%w")
+	if int(weekday) == 6 or int(weekday) == 0:
+		print "not workday" + str(weekday)
+		return 0;
+	return 1;

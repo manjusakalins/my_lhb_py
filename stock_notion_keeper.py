@@ -52,7 +52,7 @@ def stock_get_notion_ths(code):
 		if line.find("<dt>涉及概念：</dt>") != -1:
 			lines=web[idx+1];#+web[idx+2];
 			lines=lines.split("\"");
-			print lines[1];
+			#print lines[1];
 			renotion=lines[1];
 			break;
 	return renotion;
@@ -66,7 +66,7 @@ def stock_get_notion(code):
 	find = 0;
 	for row_idx in range(0, rs.max_row):
 		cur_row = openpyxl_get_row_array(rs, row_idx);
-		print cur_row
+		#print cur_row
 		if cur_row == []:
 			break;
 		if cur_row[0].find(code) != -1:
@@ -89,7 +89,7 @@ def stock_get_notion(code):
 			break;
 		ws.write(row_idx, 0, cur_row[0]);
 		ws.write(row_idx, 1, cur_row[1]);
-	print row_idx;
+	#print row_idx;
 #	if row_idx != 0:
 	row_idx = row_idx + 1;
 	ws.write(row_idx, 0, code);

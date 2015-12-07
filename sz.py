@@ -9,9 +9,11 @@ def sz_gen_record_from_data(data):
 	start_flag=0;
 	cur_reason=0;
 	cur_date=None
+	if data == None:
+		return;
 	for i in range(len(data)):
 		cur_line = data[i];
-		print cur_line;
+		#print cur_line;
 		if cur_line.find("年") != -1 and cur_line.find("日") != -1 and cur_line.find("月") != -1:
 			dformat="(%Y年%m月%d日)"
 			cur_date = datetime.datetime.strptime(cur_line.strip(), dformat);
@@ -39,17 +41,15 @@ def sz_gen_record_from_data(data):
 			cur_reason = cur_reason+1;
 		elif cur_line.find("其它异常波动的证券") != -1:
 			break;
-		print cur_reason;
+		#print cur_reason;
 	
 		if cur_line.find("(代码") != -1:
 			name=common_api.str_get_str_between(cur_line,"","(代码");
 			code=common_api.str_get_str_between(cur_line,"(代码",")");
 			total_mon=common_api.str_get_str_between(cur_line,"成交金额:","万元");
-			print name
-			print code;
-			print total_mon;
 			notion=stock_notion_keeper.stock_get_notion(code);
 			#gen init record:
+			#print total_mon;
 			cur_rec = common_api.record_gen_and_init(code, name, cur_date, cur_reason, float("%.2f" %(float(total_mon)*10000/common_api.base_money)), notion);
 		
 			j=i;
