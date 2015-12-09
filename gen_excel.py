@@ -21,7 +21,8 @@ import operator
 import random
 
 
-heads=[u"代码",u"名字", u"日期", u"营业部", u"买入", u"占比", u"卖出", u"占比", u"净值", u"概念", u"备注"]
+heads=[u"代码",u"名字", u"日期",u"原因", u"营业部", u"买入", u"占比", u"卖出", u"占比", u"净值", u"概念", u"备注"]
+hwidth=[12,0,0,0,50,0,0,0,0,0,18,0]
 keys=["code", "name", "date"]#"who", "buy", "sell", ""];
 f=open("target_list", 'r');
 target_list=f.readlines();
@@ -60,6 +61,7 @@ def excel_gen_all_list_in_record(wb,ws,cur_rec, bskey, row_idx):
 
 		#print type(cur_rec["date"])
 		col_idx=col_idx+1;ws.write_datetime(row_idx, col_idx, cur_rec["date"], date_format);
+		col_idx=col_idx+1;ws.write(row_idx, col_idx, cur_rec["reason"]);
 		col_idx=col_idx+1;ws.write(row_idx, col_idx, cur_rec[bskey][bidx]["who"].decode("utf-8"));
 		col_idx=col_idx+1;ws.write(row_idx, col_idx, cur_rec[bskey][bidx]["buy"], red_format);
 		col_idx=col_idx+1;ws.write(row_idx, col_idx, float("%.02f"%(cur_rec[bskey][bidx]["buy"]/cur_rec["total_money"])));
@@ -79,11 +81,14 @@ def excel_gen_all_list_in_record(wb,ws,cur_rec, bskey, row_idx):
 	return row_idx;
 
 
+
 def excel_do_gen():
 	g_rec=common_api.g_rec;
 
 	wb = xlsxwriter.Workbook("out.xlsx")
 	date_format = wb.add_format({'num_format': 'yyyy-m-d','align': 'center'})
+	bg_row_format = wb.add_format({'bg_color': 'silver'})
+	bg_row_format2 = wb.add_format({'bg_color': 'gray'})
 	#format:
 	header_format = wb.add_format({'bold': True,
 		'align': 'center',
@@ -100,18 +105,28 @@ def excel_do_gen():
 		#print type(heads[col_idx].encode("utf-8"))
 		ws.write(0, col_idx, heads[col_idx], header_format);
 	
-	ws.set_column(1, 1, 12);#name
-	ws.set_column(3, 3, 50);#who
-	ws.set_column(9, 9, 15);#who
+	for idx in range(len(hwidth)):
+		if 0!=hwidth[idx]:
+			ws.set_column(idx,idx, hwidth[idx])
 	row_idx=1;
+	count_bg=0
 	for key in g_rec.keys():
 		#print key
-		cur_rec=g_rec[key][0]
-		#print cur_rec
-		#print cur_rec[keys[1]]
+		start_r=row_idx;
+		for rdx in range(len(g_rec[key])):
+			cur_rec=g_rec[key][rdx]
+			#print cur_rec
+			row_idx=excel_gen_all_list_in_record(wb, ws, cur_rec, "buy", row_idx)
+			row_idx=excel_gen_all_list_in_record(wb, ws, cur_rec, "sell", row_idx)
 
-		row_idx=excel_gen_all_list_in_record(wb, ws, cur_rec, "buy", row_idx)
-		row_idx=excel_gen_all_list_in_record(wb, ws, cur_rec, "sell", row_idx)
+		if start_r != row_idx:
+			row_idx = row_idx+1;
+			if count_bg%2 == 0:
+				bg=bg_row_format;
+			else:
+				bg=bg_row_format2;
+			count_bg=count_bg+1;
+			for idx in range(row_idx-start_r):
+				ws.set_row(start_r+idx, None, bg)
 
-	#ws.data_validation(1,1,100,1, {'validate': 'date'});
 	wb.close();

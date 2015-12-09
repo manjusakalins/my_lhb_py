@@ -107,6 +107,7 @@ def sz_lhb_get_one_date_data(dtime, where):
 	if os.path.isfile(file_name):
 		rf=open(file_name, "r")
 		data=rf.read();
+		rf.close();
 		if len(data) > 100:	
 			return data;
 

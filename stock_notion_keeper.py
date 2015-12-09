@@ -20,6 +20,7 @@ import re
 import operator
 import random
 sheet_col_len=0;
+g_notion={};
 
 def openpyxl_get_row_array(sheet, row_index):
 	res=[]
@@ -57,24 +58,15 @@ def stock_get_notion_ths(code):
 			break;
 	return renotion;
 
-def stock_get_notion(code):
+#rewrite notion xlsx when not got it in xlsx.
+def __stock_get_notion(code):
+	global g_notion;
 	sheet_name="notion";
 	kfile = "stock_notion.xlsx"
 	rb = load_workbook(kfile);
 	rs = rb[sheet_name];
 
-	find = 0;
-	for row_idx in range(0, rs.max_row):
-		cur_row = openpyxl_get_row_array(rs, row_idx);
-		#print cur_row
-		if cur_row == []:
-			break;
-		if cur_row[0].find(code) != -1:
-			find=1;
-			break;
-	if find == 1:
-		return cur_row[1];
-
+	g_notion={};
 	#not find get it from web and rewrite xlsx
 	notion=stock_get_notion_ths(code)
 	if notion == "":
@@ -89,13 +81,37 @@ def stock_get_notion(code):
 			break;
 		ws.write(row_idx, 0, cur_row[0]);
 		ws.write(row_idx, 1, cur_row[1]);
+		g_notion[cur_row[0]] = cur_row[1];
 	#print row_idx;
 #	if row_idx != 0:
 	row_idx = row_idx + 1;
 	ws.write(row_idx, 0, code);
 	ws.write(row_idx, 1, notion.decode("utf-8"));
+	g_notion[code] = notion.decode("utf-8");
 	wb.close();
 	cmd = '''mv %s %s''' % (tmpfile,kfile)
 	list_file = os.popen(cmd).readlines();
 	return notion;
 	
+#load xlsx pre
+def stock_get_notion_load_all():
+	sheet_name="notion";
+	kfile = "stock_notion.xlsx"
+	rb = load_workbook(kfile);
+	rs = rb[sheet_name];
+	global g_notion;
+
+	g_notion={};
+	for row_idx in range(0, rs.max_row):
+		cur_row = openpyxl_get_row_array(rs, row_idx);
+		g_notion[cur_row[0]] = cur_row[1];
+
+#out api
+def stock_get_notion(code):
+	global g_notion;
+	if len(g_notion) == 0:
+		stock_get_notion_load_all();
+	for key in g_notion.keys():
+		if code.find(key) != -1:
+			return g_notion[key];
+	return __stock_get_notion(code);

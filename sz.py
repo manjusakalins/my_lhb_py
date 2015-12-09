@@ -6,6 +6,7 @@ import stock_notion_keeper
 
 
 def sz_gen_record_from_data(data):
+	tstart = time.clock()
 	start_flag=0;
 	cur_reason=0;
 	cur_date=None
@@ -22,36 +23,43 @@ def sz_gen_record_from_data(data):
 		if start_flag == 0:
 			continue;
 		if cur_line.find("日涨幅偏离值达到7%的前五只证券") != -1:
-			cur_reason = cur_reason+1;
+			cur_reason = "+7%";
 		elif cur_line.find("日跌幅偏离值达到7%的前五只证券") != -1:
-			cur_reason = cur_reason+1;
+			cur_reason = "-7%";
 		elif cur_line.find("日振幅值达到15%的前五只证券") != -1:
-			cur_reason = cur_reason+1;
+			cur_reason = "+-15%";
 		elif cur_line.find("日换手率达到20%的前五只证券") != -1:
-			cur_reason = cur_reason+1;
+			cur_reason = "C20";
 		elif cur_line.find("无价格涨跌幅限制的证券") != -1:
-			cur_reason = cur_reason+1;
+			cur_reason = "none";
 		elif cur_line.find("连续三个交易日内，涨幅偏离值累计达到20%的证券") != -1:
-			cur_reason = cur_reason+1;
+			cur_reason = "3+20%";
 		elif cur_line.find("连续三个交易日内，跌幅偏离值累计达到20%的证券") != -1:
-			cur_reason = cur_reason+1;
+			cur_reason = "3-20%";
 		elif cur_line.find("连续三个交易日内，涨幅偏离值累计达到12%的ST证券、*ST证券") != -1:
-			cur_reason = cur_reason+1;
+			cur_reason = "3+12%";
 		elif cur_line.find("连续三个交易日内，跌幅偏离值累计达到12%的ST证券、*ST证券") != -1:
-			cur_reason = cur_reason+1;
+			cur_reason = "3-12%";
 		elif cur_line.find("其它异常波动的证券") != -1:
 			break;
 		#print cur_reason;
 	
 		if cur_line.find("(代码") != -1:
+			
+			#print cur_line;
+			#print cur_line.split();
 			name=common_api.str_get_str_between(cur_line,"","(代码");
 			code=common_api.str_get_str_between(cur_line,"(代码",")");
 			total_mon=common_api.str_get_str_between(cur_line,"成交金额:","万元");
+			
+			rt=common_api.runtime_start();
 			notion=stock_notion_keeper.stock_get_notion(code);
+
 			#gen init record:
 			#print total_mon;
+			
 			cur_rec = common_api.record_gen_and_init(code, name, cur_date, cur_reason, float("%.2f" %(float(total_mon)*10000/common_api.base_money)), notion);
-		
+
 			j=i;
 			bslist_start = 0;
 			while bslist_start != 1:
@@ -60,6 +68,7 @@ def sz_gen_record_from_data(data):
 					bslist_start = 1;
 					break;
 				j = j+1;
+
 			for idx in range(5):
 				msg_line = data[j+idx+3];
 				if len(msg_line) < 5:
@@ -68,7 +77,7 @@ def sz_gen_record_from_data(data):
 				buy=msg_line.split()[1]
 				sell=msg_line.split()[2]
 				common_api.record_add_one_list(cur_rec, "buy", who, float("%.2f" %(float(buy)/common_api.base_money)), float("%.2f" %(float(sell)/common_api.base_money)));
-		
+
 			bslist_start = 0;
 			while bslist_start != 1:
 				new_line = data[j];
@@ -85,4 +94,6 @@ def sz_gen_record_from_data(data):
 				sell=msg_line.split()[2]
 				common_api.record_add_one_list(cur_rec, "sell", who, float("%.2f" %(float(buy)/common_api.base_money)), float("%.2f" %(float(sell)/common_api.base_money)));
 			common_api.record_join_to_global(cur_rec)
-	
+			common_api.runtime_end(rt,"sz")
+	tend = time.clock()
+	#print "run time %.2gs" % (tend-tstart)

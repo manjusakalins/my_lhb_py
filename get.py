@@ -14,8 +14,8 @@ import gen_excel
 import datetime
 import lhb_keeper
 
-sd=datetime.date(2015,8,25);
-d=datetime.date(2015,12,4);
+sd=datetime.date(2015,12,4);
+d=datetime.date(2015,12,8);
 lhb_keeper.lhb_process_period(sd, d)
 gen_excel.excel_do_gen()
 

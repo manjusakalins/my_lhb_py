@@ -6,6 +6,7 @@ import stock_notion_keeper
 
 base_money = common_api.base_money
 def sh_gen_record_from(file_lines):
+	tstart = time.clock()
 	if file_lines == None:
 		return;
 	cur_reason=0;
@@ -16,24 +17,24 @@ def sh_gen_record_from(file_lines):
 
 
 		if cur_line.find(u"一、有价格涨跌幅限制的日收盘价格涨幅偏离值达到7%的前三只证券") != -1:
-			cur_reason=1;
-		if cur_line.find(u"二、有价格涨跌幅限制的日收盘价格跌幅偏离值达到7%的前三只证券") != -1:
-			cur_reason=2;
-		if cur_line.find(u"三、有价格涨跌幅限制的日价格振幅达到15%的前三只证券") != -1:
-			cur_reason=3;
-		if cur_line.find(u"四、有价格涨跌幅限制的日换手率达到20%的前三只证券") != -1:
-			cur_reason=4;
-		if cur_line.find(u"五、无价格涨跌幅限制的证券") != -1:
-			cur_reason=5;
-		if cur_line.find(u"六、非ST、*ST和S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券") != -1:
-			cur_reason=6;
-		if cur_line.find(u"七、非ST、*ST和S证券连续三个交易日内收盘价格跌幅偏离值累计达到20%的证券:") != -1:
-			cur_reason=7;
-		if cur_line.find(u"八、ST、*ST和S证券连续三个交易日内收盘价格涨幅偏离值累计达到15%的证券") != -1:
-			cur_reason=8;
+			cur_reason="+7%";
+		elif cur_line.find(u"二、有价格涨跌幅限制的日收盘价格跌幅偏离值达到7%的前三只证券") != -1:
+			cur_reason="-7%";
+		elif cur_line.find(u"三、有价格涨跌幅限制的日价格振幅达到15%的前三只证券") != -1:
+			cur_reason="+-15%";
+		elif cur_line.find(u"四、有价格涨跌幅限制的日换手率达到20%的前三只证券") != -1:
+			cur_reason="c20%";
+		elif cur_line.find(u"五、无价格涨跌幅限制的证券") != -1:
+			cur_reason="none";
+		elif cur_line.find(u"六、非ST、*ST和S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券") != -1:
+			cur_reason="3+20%";
+		elif cur_line.find(u"七、非ST、*ST和S证券连续三个交易日内收盘价格跌幅偏离值累计达到20%的证券:") != -1:
+			cur_reason="3-20%";
+		elif cur_line.find(u"八、ST、*ST和S证券连续三个交易日内收盘价格涨幅偏离值累计达到15%的证券") != -1:
+			cur_reason="3+15%";
 			break;
-		if cur_line.find(u"九、ST、*ST和S证券连续三个交易日内收盘价格跌幅偏离值累计达到15%的证券") != -1:
-			cur_reason=9;
+		elif cur_line.find(u"九、ST、*ST和S证券连续三个交易日内收盘价格跌幅偏离值累计达到15%的证券") != -1:
+			cur_reason="3-15%";
 		#print cur_reason;
 		cur_str=cur_line.encode('utf-8')
 		
@@ -47,7 +48,7 @@ def sh_gen_record_from(file_lines):
 			ttidx=i+1;
 			while file_lines[ttidx].find("(") != -1 and file_lines[ttidx].find(")") != -1:
 				cur_list = file_lines[ttidx].split();
-				print cur_list
+				#print cur_list
 				if len(cur_list) < 6:
 					g_total_money[str(cur_list[1])] = base_money;
 					ttidx = ttidx+1;
@@ -85,4 +86,5 @@ def sh_gen_record_from(file_lines):
 				money=cur_str.split()[2];
 				common_api.record_add_one_list(cur_rec, "sell", who, float("0.0"), float("%.2f" %(float(money)/base_money)));
 			common_api.record_join_to_global(cur_rec)
-
+	tend = time.clock()
+	#print "run time %.2gs" % (tend-tstart)

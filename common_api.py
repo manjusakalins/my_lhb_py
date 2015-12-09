@@ -70,3 +70,9 @@ def date_is_workday(dtime):
 		print "not workday" + str(weekday)
 		return 0;
 	return 1;
+
+def runtime_start():
+	return time.clock();
+def runtime_end(st,strs):
+	et = time.clock();
+	#print "str" + "run time %.2gs" % (et-st)
