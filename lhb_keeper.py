@@ -12,7 +12,8 @@ import sh
 import sz
 import common_api
 import gen_excel
-
+import socket
+import lhb_sock
 
 class HttpRedirect_Handler(urllib2.HTTPRedirectHandler):
 	def http_error_302(self, req, fp, code, msg, headers):
@@ -167,4 +168,40 @@ def lhb_process_period(start_d, end_d):
 	while end_d >= start_d:
 		lhb_process_one_date(start_d);
 		start_d = start_d + datetime.timedelta(days=1);
+
+####===================================================================
+def lhb_sock_return_data_onwhere(onwhere,data):
+	if 'sh' == onwhere:
+		return sh_pre_process_lhb_data(data)
+	else:
+		return data;
+
+def lhb_sock_process_one_date_where(onwhere,dtime):
+	
+	if not common_api.date_is_workday(dtime):
+		return "";
+	file_name="lhb/"+onwhere+where+dtime.isoformat();
+	print "try get "+file_name
+
+	#if already exist.
+	if os.path.isfile(file_name):
+		rf=open(file_name, "r")
+		data=rf.read();
+		rf.close();
+		if len(data) > 100:
+			return lhb_sock_return_data_onwhere(onwhere, data);
+	#socket read out data:
+	lhb_socket.lhb_socket_read_sz(onwhere,dtime)
+	#print data;
+	wf=open(file_name, "w");
+	wf.write(data);
+	wf.close();
+	return lhb_sock_return_data_onwhere(onwhere, data);
+	
+	
+def lhb_sock_process_period(start_d, end_d):
+	while end_d >= start_d:
+		lhb_process_one_date(start_d);
+		start_d = start_d + datetime.timedelta(days=1);
+
 
