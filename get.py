@@ -13,12 +13,13 @@ import common_api
 import gen_excel
 import datetime
 import lhb_keeper
+import lhb_socket
 
-'''
-sd=datetime.date(2014,10,4);
-d=datetime.date(2015,12,8);
-lhb_keeper.lhb_process_period(sd, d)
-gen_excel.excel_do_gen()
-'''
-lhb_keeper.geturldata();
+
+sd=datetime.date(2013,9,10);
+d=datetime.date(2015,9,4);
+lhb_socket.lhb_sock_process_period(sd, d)
+#gen_excel.excel_do_gen()
+
+
 

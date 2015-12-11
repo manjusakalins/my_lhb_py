@@ -3,6 +3,12 @@ import datetime
 import socket
 import sys
 import time
+import common_api
+import os
+import simplejson as json
+import sz
+import sh
+import gen_excel
 
 #####################socket start##########################
 sz_sock=None;
@@ -68,10 +74,20 @@ def lhb_socket_read_httpget(sock,getstr):
 		lhb_socket_socket_error(sock);
 
 	data=''
-	data = sock.recv(1024)
+	data = sock.recv(1024);
+	if len(data) < 20:
+		print "first data================start:\n"+data+"\n================end"
+		data = sock.recv(1024)
 	first=len(data);
 	print "first data================start:\n"+data+"\n================end"
+	
 
+	#judge if web found:
+	resp = data.split("\n")[0];
+	print resp
+	if resp.find("200") == -1:
+		print "today not work in stock!!!"
+		return "";
 	#find content length;
 	beg = data.find('Content-Length:',0,len(data))
 	end = data.find('\n',beg,len(data))
@@ -103,7 +119,7 @@ def lhb_socket_read_httpget(sock,getstr):
 	return all_data[head_len:];
 
 
-def lhb_gen_str_from_onwhere(where, dtime):
+def lhb_gen_str_from_where(dtime, where):
 	if where == "zb":
 		refstr='http://www.szse.cn/main/disclosure/news/scgkxx/'
 		baseurl='/szseWeb/common/szse/files/text/jy/jy'
@@ -113,7 +129,7 @@ def lhb_gen_str_from_onwhere(where, dtime):
 	if where == "zxb":
 		refstr='http://www.szse.cn/main/sme/jytj/jygkxx/'
 		baseurl='/szseWeb/common/szse/files/text/smeTxt/gk/sme_jy'
-
+	print where
 	if where == 'sh':
 		refstr='http://www.sse.com.cn/disclosure/diclosure/public/'
 		geturl='GET /infodisplay/showTradePublicFile.do?jsonCallBack=jQuery17203112255702726543_1449802401736&dateTx='+dtime.isoformat()+'&random=0.6180421001052648&_=1449802771694 HTTP/1.1'
@@ -138,15 +154,15 @@ def lhb_check_data_format_form_where(where,all_data):
 		return '';
 	#ok and return utf-8
 	if 'sh' == where:
-		return all_data.encode("utf-8");
+		return all_data
 	else:
 		return all_data.decode("gbk").encode("utf-8");
 
 
 
-def lhb_socket_read_onedate_form_where(dtime, where):
+def __lhb_socket_read_onedate_form_where(dtime, where):
 	sock=lhb_get_socket_form_where(where);
-	strs=lhb_gen_str_from_onwhere(where,dtime);
+	strs=lhb_gen_str_from_where(dtime,where);
 
 	print 'send start...'
 	#make request str
@@ -164,13 +180,55 @@ Accept-Language: en-US,en;q=0.8
 	print getstr
 	
 	all_data=lhb_socket_read_httpget(sock,getstr);
-	return lhb_check_data_format_form_where(where,all_data) == 0:
+	return lhb_check_data_format_form_where(where,all_data)
+
+def sh_pre_process_lhb_data(data):
+	js_data=data.split("({")[1].split("})")[0];
+	js_data="{"+js_data+"}"
+	ret_js=json.loads(js_data,encoding="utf-8")
+	#print ret_js['dateTx'];
+	#print ret_js['fileContents']
+	file_lines=ret_js['fileContents']
+	return file_lines;
+
+def lhb_sock_return_data_onwhere(onwhere,data):
+	if 'sh' == onwhere:
+		return sh_pre_process_lhb_data(data)
+	else:
+		return data;
+
+def lhb_sock_process_one_date_where(dtime, onwhere):
+	
+	if not common_api.date_is_workday(dtime):
+		return "";
+	file_name="lhb2/"+onwhere+dtime.isoformat();
+	print "try get "+file_name
+
+	#if already exist.
+	if os.path.isfile(file_name):
+		rf=open(file_name, "r")
+		data=rf.read();
+		rf.close();
+		if len(data) > 100:
+			return lhb_sock_return_data_onwhere(onwhere, data);
+	#socket read out data:
+	print "socket get file content"
+	data=__lhb_socket_read_onedate_form_where(dtime, onwhere)
+	#print data;
+	wf=open(file_name, "w");
+	wf.write(data);
+	wf.close();
+	return lhb_sock_return_data_onwhere(onwhere, data);
 
 ############### http get  end ####################################
 
-sd=datetime.date(2015,12,8);
-lhb_socket_read_onedate_form_where(sd, 'sh');
-lhb_socket_read_onedate_form_where(sd, 'zb');
-lhb_socket_read_onedate_form_where(sd, 'cyb');
-lhb_socket_read_onedate_form_where(sd, 'zxb');
-#lhb_socket_read_sh(sd);
+def lhb_sock_process_one_date(sd):
+	data=lhb_sock_process_one_date_where(sd, 'sh');sh.sh_gen_record_from(data)
+	data=lhb_sock_process_one_date_where(sd, 'cyb');data=data.split("\n");sz.sz_gen_record_from_data(data)
+	data=lhb_sock_process_one_date_where(sd, 'zb');data=data.split("\n");sz.sz_gen_record_from_data(data)
+	data=lhb_sock_process_one_date_where(sd, 'zxb');data=data.split("\n");sz.sz_gen_record_from_data(data)
+
+def lhb_sock_process_period(start_d, end_d):
+	while end_d >= start_d:
+		lhb_sock_process_one_date(start_d);
+		start_d = start_d + datetime.timedelta(days=1);

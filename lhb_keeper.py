@@ -13,7 +13,7 @@ import sz
 import common_api
 import gen_excel
 import socket
-import lhb_sock
+import lhb_socket
 
 class HttpRedirect_Handler(urllib2.HTTPRedirectHandler):
 	def http_error_302(self, req, fp, code, msg, headers):
@@ -180,7 +180,7 @@ def lhb_sock_process_one_date_where(onwhere,dtime):
 	
 	if not common_api.date_is_workday(dtime):
 		return "";
-	file_name="lhb/"+onwhere+where+dtime.isoformat();
+	file_name="lhb/"+onwhere+dtime.isoformat();
 	print "try get "+file_name
 
 	#if already exist.
@@ -191,17 +191,34 @@ def lhb_sock_process_one_date_where(onwhere,dtime):
 		if len(data) > 100:
 			return lhb_sock_return_data_onwhere(onwhere, data);
 	#socket read out data:
-	lhb_socket.lhb_socket_read_sz(onwhere,dtime)
+
+		
+	data=lhb_socket.lhb_socket_read_onedate_form_where(onwhere,dtime)
 	#print data;
 	wf=open(file_name, "w");
 	wf.write(data);
 	wf.close();
-	return lhb_sock_return_data_onwhere(onwhere, data);
+	return data;
 	
+def lhb_sock_process_one_date(d):
+	data=lhb_socket.lhb_sock_process_one_date_where(d,"zxb");
+	data=data.split("\n");
+	sz.sz_gen_record_from_data(data)
+'''
+	data=lhb_socket.lhb_socket_read_onedate_form_where(d,"cyb");
+	data=data.split("\n");
+	sz.sz_gen_record_from_data(data)
 	
+	data=lhb_socket.lhb_socket_read_onedate_form_where(d,"zb");
+	data=data.split("\n");
+	sz.sz_gen_record_from_data(data)
+	
+	data=lhb_socket.lhb_socket_read_onedate_form_where(d, 'sh');
+	sh.sh_gen_record_from(data)
+'''
 def lhb_sock_process_period(start_d, end_d):
 	while end_d >= start_d:
-		lhb_process_one_date(start_d);
+		lhb_sock_process_one_date(start_d);
 		start_d = start_d + datetime.timedelta(days=1);
 
 

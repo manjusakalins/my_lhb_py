@@ -35,6 +35,8 @@ def sh_gen_record_from(file_lines):
 			break;
 		elif cur_line.find(u"九、ST、*ST和S证券连续三个交易日内收盘价格跌幅偏离值累计达到15%的证券") != -1:
 			cur_reason="3-15%";
+		elif cur_line.find(u"十、") != -1:
+			break;
 		#print cur_reason;
 		cur_str=cur_line.encode('utf-8')
 		
@@ -45,21 +47,27 @@ def sh_gen_record_from(file_lines):
 	
 		#get totalmoney:
 		if cur_str.find("成交量") != -1 and cur_str.find("成交金额") != -1:
+			headlist=cur_str.split();
+			cj_idx=5;
+			for iii in range(len(headlist)):
+				if headlist[iii].find("成交金额") != -1:
+					cj_idx=iii;
 			ttidx=i+1;
 			while file_lines[ttidx].find("(") != -1 and file_lines[ttidx].find(")") != -1:
 				cur_list = file_lines[ttidx].split();
+				#print file_lines[ttidx]
+				#print cur_list[5]
 				#print cur_list
 				if len(cur_list) < 6:
 					g_total_money[str(cur_list[1])] = base_money;
 					ttidx = ttidx+1;
 					continue;
-				g_total_money[str(cur_list[1])] = cur_list[5];
+				g_total_money[str(cur_list[1])] = cur_list[cj_idx];
 				ttidx = ttidx+1;
 			#print g_total_money
 				
 		#get one record:
 		if cur_str.find("证券代码:") != -1 and cur_str.find("证券简称") != -1:
-			#print cur_str;
 			code=cur_str.split("证券代码:")[1].split("证券简称:")[0].strip()
 			name=cur_str.split("证券代码:")[1].split("证券简称:")[1].strip()
 			#print code
@@ -71,7 +79,7 @@ def sh_gen_record_from(file_lines):
 			for j in range(5):
 				cur_str=file_lines[i+3+j].encode('utf-8')
 				#print cur_str.split();
-				if len(cur_str) < 3:
+				if len(cur_str) < 3 or cur_str.find("(") == -1:
 					break;
 				who=cur_str.split()[1];
 				money=cur_str.split()[2];
@@ -80,7 +88,7 @@ def sh_gen_record_from(file_lines):
 			#process sell
 			for j in range(5):
 				cur_str=file_lines[i+3+5+2+j].encode('utf-8')
-				if len(cur_str) < 3:
+				if len(cur_str) < 3 or cur_str.find("(") == -1:
 					break;
 				who=cur_str.split()[1];
 				money=cur_str.split()[2];
