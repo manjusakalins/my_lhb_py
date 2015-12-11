@@ -135,8 +135,13 @@ def lhb_check_data_format_form_where(where,all_data):
 		print "check data ok!"
 	except:
 		print "data error!!!! " + where
-		return 0;
-	return 1;
+		return '';
+	#ok and return utf-8
+	if 'sh' == where:
+		return all_data.encode("utf-8");
+	else:
+		return all_data.decode("gbk").encode("utf-8");
+
 
 
 def lhb_socket_read_onedate_form_where(dtime, where):
@@ -158,11 +163,8 @@ Accept-Language: en-US,en;q=0.8
 '''
 	print getstr
 	
-
 	all_data=lhb_socket_read_httpget(sock,getstr);
-	if lhb_check_data_format_form_where(where,all_data) == 0:
-		return '';
-	return all_data;
+	return lhb_check_data_format_form_where(where,all_data) == 0:
 
 ############### http get  end ####################################
 
