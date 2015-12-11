@@ -16,8 +16,8 @@ import lhb_keeper
 import lhb_socket
 
 
-sd=datetime.date(2013,9,10);
-d=datetime.date(2015,9,4);
+sd=datetime.date(2012,9,10);
+d=datetime.date(2015,12,11);
 lhb_socket.lhb_sock_process_period(sd, d)
 #gen_excel.excel_do_gen()
 

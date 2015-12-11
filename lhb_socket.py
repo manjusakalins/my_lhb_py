@@ -34,16 +34,16 @@ def lhb_socket_get_create_socket(server):
 	return sock;
 
 def lhb_socket_get_sz_socket():
-	global sz_sock;
-	if sz_sock!=None:
-		return sz_sock;
+	#global sz_sock;
+	#if sz_sock!=None:
+	#	return sz_sock;
 	sz_sock=lhb_socket_get_create_socket("www.szse.cn");
 	return sz_sock;
 
 def lhb_socket_get_sh_socket():
-	global sh_sock;
-	if sh_sock!=None:
-		return sh_sock;
+	#global sh_sock;
+	#if sh_sock!=None:
+	#	return sh_sock;
 	sh_sock=lhb_socket_get_create_socket("query.sse.com.cn");
 	return sh_sock;
 
@@ -76,7 +76,7 @@ def lhb_socket_read_httpget(sock,getstr):
 	data=''
 	data = sock.recv(1024);
 	if len(data) < 20:
-		print "first data================start:\n"+data+"\n================end"
+		time.sleep(3);
 		data = sock.recv(1024)
 	first=len(data);
 	print "first data================start:\n"+data+"\n================end"
@@ -104,18 +104,17 @@ def lhb_socket_read_httpget(sock,getstr):
 #	end = data.find('\r\n',beg,len(data))
 	head_len=beg+4;
 	print "header len:" + str(head_len)
-	print data[head_len];
-	print data[head_len+1];
-	print data[head_len+2];
 
 	#read all data;
 	all_data=data;
-	while (1):
-		data=sock.recv(1024)
-		all_data=all_data+data;
-		if(len(all_data) >= num+head_len):
-			break
+	if(len(all_data) < num+head_len):
+		while (1):
+			data=sock.recv(1024)
+			all_data=all_data+data;
+			if(len(all_data) >= num+head_len):
+				break
 	print "all_data len:" + str(len(all_data))
+	sock.close();
 	return all_data[head_len:];
 
 
@@ -221,12 +220,19 @@ def lhb_sock_process_one_date_where(dtime, onwhere):
 	return lhb_sock_return_data_onwhere(onwhere, data);
 
 ############### http get  end ####################################
-
+def lhb_parse_data_for_excel(where,data):
+	do_parse = 0;
+	if do_parse == 1:
+		if 'sh' == where:
+			sh.sh_gen_record_from(data)
+		else:
+			data=data.split("\n");sz.sz_gen_record_from_data(data)
+		
 def lhb_sock_process_one_date(sd):
-	data=lhb_sock_process_one_date_where(sd, 'sh');sh.sh_gen_record_from(data)
-	data=lhb_sock_process_one_date_where(sd, 'cyb');data=data.split("\n");sz.sz_gen_record_from_data(data)
-	data=lhb_sock_process_one_date_where(sd, 'zb');data=data.split("\n");sz.sz_gen_record_from_data(data)
-	data=lhb_sock_process_one_date_where(sd, 'zxb');data=data.split("\n");sz.sz_gen_record_from_data(data)
+	data=lhb_sock_process_one_date_where(sd, 'sh');lhb_parse_data_for_excel('sh', data)
+	data=lhb_sock_process_one_date_where(sd, 'cyb');lhb_parse_data_for_excel('cyb', data)
+	data=lhb_sock_process_one_date_where(sd, 'zb');lhb_parse_data_for_excel('zb', data)
+	data=lhb_sock_process_one_date_where(sd, 'zxb');lhb_parse_data_for_excel('zxb', data)
 
 def lhb_sock_process_period(start_d, end_d):
 	while end_d >= start_d:
