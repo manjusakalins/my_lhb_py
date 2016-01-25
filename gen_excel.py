@@ -22,7 +22,7 @@ import random
 
 
 heads=[u"代码",u"名字", u"日期",u"原因", u"营业部", u"买入", u"占比", u"卖出", u"占比", u"净值", u"概念", u"备注"]
-hwidth=[12,0,0,0,50,0,0,0,0,0,18,0]
+hwidth=[12,0,15,0,50,0,0,0,0,0,18,0]
 keys=["code", "name", "date"]#"who", "buy", "sell", ""];
 f=open("target_list", 'r');
 target_list=f.readlines();
@@ -59,7 +59,9 @@ def excel_gen_all_list_in_record(wb,ws,cur_rec, bskey, row_idx):
 		else:
 			ws.write(row_idx, col_idx, cur_rec["name"]);
 
-		#print type(cur_rec["date"])
+#		print cur_rec[bskey]
+		if float(cur_rec["total_money"]) == 0:
+			cur_rec["total_money"] = 1;
 		col_idx=col_idx+1;ws.write_datetime(row_idx, col_idx, cur_rec["date"], date_format);
 		col_idx=col_idx+1;ws.write(row_idx, col_idx, cur_rec["reason"]);
 		col_idx=col_idx+1;ws.write(row_idx, col_idx, cur_rec[bskey][bidx]["who"].decode("utf-8"));

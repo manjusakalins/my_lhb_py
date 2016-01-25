@@ -221,12 +221,13 @@ def lhb_sock_process_one_date_where(dtime, onwhere):
 
 ############### http get  end ####################################
 def lhb_parse_data_for_excel(where,data):
-	do_parse = 0;
+	do_parse = 1;
 	if do_parse == 1:
 		if 'sh' == where:
 			sh.sh_gen_record_from(data)
 		else:
-			data=data.split("\n");sz.sz_gen_record_from_data(data)
+			data=data.split("\n");
+			sz.sz_gen_record_from_data(data)
 		
 def lhb_sock_process_one_date(sd):
 	data=lhb_sock_process_one_date_where(sd, 'sh');lhb_parse_data_for_excel('sh', data)
