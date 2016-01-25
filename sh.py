@@ -62,6 +62,12 @@ def sh_gen_record_from(file_lines):
 					g_total_money[str(cur_list[1])] = base_money;
 					ttidx = ttidx+1;
 					continue;
+				#for [(100)6xxxx]:
+				if len(cur_list[0]) > 9:
+					g_total_money[str(cur_list[0].split(")")[1])] = cur_list[cj_idx-1];
+					ttidx = ttidx+1;
+					continue;
+				print cur_list
 				g_total_money[str(cur_list[1])] = cur_list[cj_idx];
 				ttidx = ttidx+1;
 			#print g_total_money
