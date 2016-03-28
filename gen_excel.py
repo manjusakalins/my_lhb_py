@@ -26,6 +26,20 @@ hwidth=[12,0,15,0,50,0,0,0,0,0,18,0]
 keys=["code", "name", "date"]#"who", "buy", "sell", ""];
 f=open("target_list", 'r');
 target_list=f.readlines();
+t_list={};
+def gen_target_array():
+	t_list.clear();
+	for cur_target in target_list:
+		if len(cur_target) < 3:
+			continue;
+		if len(cur_target.split()) != 2:
+			print "target list error @@@@@@@@@@@@@@@@@" 
+			print cur_target
+			exit();
+		t_list[cur_target.split()[0]] = cur_target.split()[1];
+		
+	print "########## total target to get %d" % len(t_list)
+
 #print lines[0].split()[1];
 def excel_check_if_is_target(who):
 	for cur_target in target_list:
@@ -132,3 +146,6 @@ def excel_do_gen():
 				ws.set_row(start_r+idx, None, bg)
 
 	wb.close();
+
+def gen_excel_init():
+	gen_target_array();
